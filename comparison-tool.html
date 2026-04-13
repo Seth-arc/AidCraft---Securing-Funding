@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Comparison Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --primary-blue: #58a6ff;
+            --border-dark: #30363d;
+            --text-light: #e6edf3;
+            --text-muted: #8b949e;
+            --positive: #3fb950;
+            --negative: #f85149;
+            --accent-gold: #ffd700;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-dark);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+        }
+        
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border-dark);
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        input.input-error {
+            border-color: var(--negative);
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary-blue);
+            color: var(--text-light);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2f7bf7;
+        }
+        
+        button:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .reset-animation {
+            animation: pulse 0.5s;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(13,17,23,0.7);
+            z-index: 100;
+            border-radius: 10px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(88,166,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-blue);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .placeholder-message {
+            padding: 20px;
+            color: var(--text-muted);
+            text-align: center;
+            font-style: italic;
+        }
+        
+        /* Comparison Table Styles */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-dark);
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-dark);
+        }
+        
+        .comparison-table th {
+            background-color: rgba(26,36,56,0.8);
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .comparison-table td {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .comparison-table tr:hover td {
+            background-color: rgba(26,36,56,0.4);
+        }
+        
+        .comparison-highlight {
+            background-color: rgba(42, 107, 132, 0.15);
+        }
+        
+        table.comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        table.comparison-table th,
+        table.comparison-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-dark);
+        }
+        
+        table.comparison-table th {
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+        
+        table.comparison-table .metric-name {
+            font-weight: 600;
+        }
+        
+        table.comparison-table .best-value {
+            color: var(--positive);
+            font-weight: 600;
+        }
+        
+        table.repayment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        table.repayment-table th,
+        table.repayment-table td {
+            padding: 8px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-dark);
+        }
+        
+        table.repayment-table th {
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+        
+        .repayment-table .grace-period-row td {
+            background-color: rgba(88,166,255,0.1);
+        }
+        
+        .results-container {
+            overflow-x: auto;
+        }
+        
+        .results-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-dark);
+        }
+        
+        .results-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .results-tab.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+        }
+        
+        .results-content {
+            display: none;
+        }
+        
+        .results-content.active {
+            display: block;
+        }
+        
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        
+        .tooltip-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 16px;
+            height: 16px;
+            background-color: var(--text-muted);
+            color: var(--text-light);
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: help;
+        }
+        
+        .tooltip {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(13,17,23,0.95);
+            border: 1px solid var(--border-dark);
+            padding: 10px;
+            border-radius: 5px;
+            width: 250px;
+            color: var(--text-light);
+            font-size: 12px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent var(--border-dark) transparent;
+        }
+        
+        .grid-1x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media screen and (max-width: 768px) {
+            .grid-1x2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* NPV Results Styling */
+        .npv-result {
+            background-color: var(--bg-card);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid var(--border-dark);
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-dark);
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .result-value {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .result-explanation {
+            margin-top: 15px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        
+        .lender-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .lender-options label {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 15px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        
+        .lender-options input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        
+        @media screen and (max-width: 480px) {
+            .lender-options {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+        
+        .error-message {
+            color: var(--negative);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .input-error + .error-message {
+            display: block;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+            }
+            
+            .card {
+                border: 1px solid #ddd;
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+            
+            .button-group, 
+            .loader,
+            button {
+                display: none !important;
+            }
+            
+            .results-tab:not(.active) {
+                display: none;
+            }
+            
+            .results-content:not(.active) {
+                display: none;
+            }
+            
+            table.comparison-table th {
+                background-color: #f1f1f1 !important;
+                color: black;
+            }
+            
+            table.comparison-table td, 
+            table.repayment-table td {
+                color: black;
+                border-bottom: 1px solid #ddd;
+            }
+            
+            table.comparison-table .best-value {
+                color: #2e7d32 !important;
+            }
+            
+            .print-header {
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .print-footer {
+                display: block;
+                text-align: center;
+                margin-top: 20px;
+                font-size: 12px;
+                color: #666;
+            }
+        }
+        
+        .print-header, .print-footer {
+            display: none;
+        }
+        
+        /* Export button styles */
+        button.export-btn {
+            background-color: #2ea44f;
+            margin-left: 10px;
+        }
+        
+        button.export-btn:hover {
+            background-color: #2c974b;
+        }
+        
+        .scenarios-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-dark);
+        }
+        
+        .scenarios-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .scenario-item {
+            background-color: rgba(88,166,255,0.1);
+            border: 1px solid var(--border-dark);
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        
+        .scenario-item:hover {
+            background-color: rgba(88,166,255,0.2);
+        }
+        
+        .scenario-delete {
+            margin-left: 8px;
+            color: var(--negative);
+            opacity: 0.7;
+            cursor: pointer;
+        }
+        
+        .scenario-delete:hover {
+            opacity: 1;
+        }
+        
+        /* Theme selection styles */
+        .theme-selector {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+        
+        .theme-selector select {
+            padding: 5px 10px;
+            border-radius: 4px;
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            border: 1px solid var(--border-dark);
+        }
+        
+        /* Dark theme (default) */
+        .theme-dark {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --primary-blue: #58a6ff;
+            --border-dark: #30363d;
+            --text-light: #e6edf3;
+            --text-muted: #8b949e;
+            --positive: #3fb950;
+            --negative: #f85149;
+        }
+        
+        /* Light theme */
+        .theme-light {
+            --bg-dark: #f6f8fa;
+            --bg-card: #ffffff;
+            --primary-blue: #0969da;
+            --border-dark: #d0d7de;
+            --text-light: #24292f;
+            --text-muted: #57606a;
+            --positive: #2da44e;
+            --negative: #cf222e;
+        }
+        
+        /* High contrast theme */
+        .theme-high-contrast {
+            --bg-dark: #000000;
+            --bg-card: #0d1117;
+            --primary-blue: #79c0ff;
+            --border-dark: #6e7681;
+            --text-light: #ffffff;
+            --text-muted: #c9d1d9;
+            --positive: #56d364;
+        }
+    </style>
+</head>
+<body class="theme-dark">
+    <div class="theme-selector">
+        <select id="theme-select">
+            <option value="theme-dark">Dark Theme</option>
+            <option value="theme-light">Light Theme</option>
+            <option value="theme-high-contrast">High Contrast</option>
+        </select>
+    </div>
+    <div class="container">
+        <div class="header-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>Loan Comparison Tool</h1>
+            <a href="funding.html" class="return-link" style="text-decoration: none;">
+                <button style="background-color: #555;">Return to Main Application</button>
+            </a>
+        </div>
+        
+        <div class="card">
+            <h2>Loan Parameters</h2>
+            
+            <div class="grid-1x2">
+                <div>
+                    <div class="form-group">
+                        <label for="loan-amount">
+                            Loan Amount (USD)
+                            <span class="tooltip-wrapper">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip">The total amount of the loan in US dollars.</span>
+                            </span>
+                        </label>
+                        <input type="number" id="loan-amount" value="1200000000" step="1000000">
+                        <div class="error-message">Please enter a valid positive loan amount.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="interest-rate">
+                            Interest Rate (%)
+                            <span class="tooltip-wrapper">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip">The annual interest rate charged on the loan.</span>
+                            </span>
+                        </label>
+                        <input type="number" id="interest-rate" value="2.8" step="0.1">
+                        <div class="error-message">Interest rate must be between 0-100%.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maturity">
+                            Maturity (Years)
+                            <span class="tooltip-wrapper">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip">The total length of the loan in years.</span>
+                            </span>
+                        </label>
+                        <input type="number" id="maturity" value="20" min="1">
+                        <div class="error-message">Maturity period must be at least 1 year.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="grace-period">
+                            Grace Period (Years)
+                            <span class="tooltip-wrapper">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip">Period during which only interest is paid (no principal repayment).</span>
+                            </span>
+                        </label>
+                        <input type="number" id="grace-period" value="5" min="0">
+                        <div class="error-message">Grace period must be less than maturity.</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label for="commitment-fee">
+                            Commitment Fee (%)
+                            <span class="tooltip-wrapper">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip">Fee charged on undrawn loan balance during the grace period.</span>
+                            </span>
+                        </label>
+                        <input type="number" id="commitment-fee" value="0.25" step="0.05">
+                        <div class="error-message">Commitment fee must be between 0-10%.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="management-fee">
+                            Management Fee (%)
+                            <span class="tooltip-wrapper">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip">One-time upfront fee charged by the lender at loan disbursement.</span>
+                            </span>
+                        </label>
+                        <input type="number" id="management-fee" value="0.5" step="0.05">
+                        <div class="error-message">Management fee must be between 0-10%.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="discount-rate">
+                            Discount Rate (%)
+                            <span class="tooltip-wrapper">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip">Rate used to calculate the present value of future payments.</span>
+                            </span>
+                        </label>
+                        <input type="number" id="discount-rate" value="5.0" step="0.1">
+                        <div class="error-message">Discount rate must be between 0-100%.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="repayment-type">
+                            Repayment Type
+                            <span class="tooltip-wrapper">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip">Equal Installments: Same total payment amount each period. Equal Principal: Same principal payment each period. Bullet: Principal paid at maturity.</span>
+                            </span>
+                        </label>
+                        <select id="repayment-type">
+                            <option value="equal-installments">Equal Installments (Amortized)</option>
+                            <option value="equal-principal">Equal Principal</option>
+                            <option value="bullet">Bullet (End of Term)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Compare with:</label>
+                <div class="lender-options">
+                    <label><input type="checkbox" value="chinaEximbank" checked> China Eximbank</label>
+                    <label><input type="checkbox" value="parisClub" checked> Paris Club Consortium</label>
+                    <label><input type="checkbox" value="commercialBanks" checked> Commercial Banks</label>
+                    <label><input type="checkbox" value="africanDevelopmentBank" checked> African Development Bank</label>
+                </div>
+                <div class="error-message">Please select at least one lender for comparison.</div>
+            </div>
+            
+            <div class="button-group">
+                <button id="run-comparison">Calculate & Compare</button>
+                <button id="reset-form">Reset Form</button>
+                <button id="print-results" style="display: none; background-color: #777;">Print Results</button>
+            </div>
+            
+            <div class="scenarios-section">
+                <h3>Loan Scenarios</h3>
+                <div class="button-group">
+                    <button id="save-scenario">Save Current Scenario</button>
+                    <button id="clear-scenarios">Clear All Scenarios</button>
+                </div>
+                <div class="scenarios-list" id="scenarios-list">
+                    <!-- Saved scenarios will appear here -->
+                    <p class="placeholder-message">No saved scenarios yet.</p>
+                </div>
+            </div>
+            
+            <div id="calculation-loader" class="loader">
+                <div class="spinner"></div>
+            </div>
+        </div>
+        
+        <div class="shopper-results">
+            <div class="results-tabs">
+                <div class="results-tab active" data-result-tab="comparison">Comparison</div>
+                <div class="results-tab" data-result-tab="repayment">Repayment Schedule</div>
+                <div class="results-tab" data-result-tab="npv">NPV Analysis</div>
+            </div>
+            
+            <div class="card">
+                <div id="comparison" class="results-content active">
+                    <h3>Comparison Results</h3>
+                    <div class="results-actions" style="display: none; margin-bottom: 15px;">
+                        <button id="export-comparison" class="export-btn">Export to CSV</button>
+                    </div>
+                    <div class="results-container">
+                        <p class="placeholder-message">Enter loan parameters and click "Calculate & Compare" to see comprehensive analysis.</p>
+                    </div>
+                </div>
+                
+                <div id="repayment" class="results-content">
+                    <h3>Repayment Schedule</h3>
+                    <div class="results-actions" style="display: none; margin-bottom: 15px;">
+                        <button id="export-schedule" class="export-btn">Export to CSV</button>
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 300px; margin-bottom: 20px;">
+                        <canvas id="repayment-chart"></canvas>
+                    </div>
+                    <div class="repayment-schedule">
+                        <p class="placeholder-message">Enter loan parameters to generate a detailed repayment schedule.</p>
+                    </div>
+                </div>
+                
+                <div id="npv" class="results-content">
+                    <h3>NPV Analysis</h3>
+                    <div class="npv-results">
+                        <p class="placeholder-message">Enter loan parameters to see NPV analysis results.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button id="print-results" style="display: none;">Print Results</button>
+        <div class="print-header">
+            <h2>Loan Comparison Results</h2>
+            <p>Generated on <span id="print-date"></span></p>
+        </div>
+        <div class="print-footer">
+            <p>Generated by Loan Comparison Tool</p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const runComparisonBtn = document.getElementById('run-comparison');
+            const calculationLoader = document.getElementById('calculation-loader');
+            const resetFormBtn = document.getElementById('reset-form');
+            const printResultsBtn = document.getElementById('print-results');
+            const exportCsvBtn = document.getElementById('export-csv');
+            const printDateSpan = document.getElementById('print-date');
+            const saveScenarioBtn = document.getElementById('save-scenario');
+            const clearScenariosBtn = document.getElementById('clear-scenarios');
+            const scenariosList = document.getElementById('scenarios-list');
+            
+            // Initially hide the loader
+            if (calculationLoader) {
+                calculationLoader.style.display = 'none';
+            }
+            
+            // Initialize tooltips
+            const tooltipIcons = document.querySelectorAll('.tooltip-icon');
+            tooltipIcons.forEach(icon => {
+                icon.addEventListener('mouseenter', function() {
+                    const tooltip = this.closest('.tooltip-wrapper').querySelector('.tooltip');
+                    tooltip.style.opacity = '1';
+                    tooltip.style.zIndex = '100';
+                    
+                    // Position tooltip
+                    const tooltipWidth = tooltip.offsetWidth;
+                    const parentWidth = this.closest('.tooltip-wrapper').offsetWidth;
+                    tooltip.style.left = ((parentWidth - tooltipWidth) / 2) + 'px';
+                });
+                
+                icon.addEventListener('mouseleave', function() {
+                    const tooltip = this.closest('.tooltip-wrapper').querySelector('.tooltip');
+                    tooltip.style.opacity = '0';
+                    tooltip.style.zIndex = '-1';
+                });
+            });
+            
+            // Reset form functionality
+            if (resetFormBtn) {
+                resetFormBtn.addEventListener('click', function() {
+                    // Reset form values to defaults
+                    document.getElementById('loan-amount').value = '1200000000';
+                    document.getElementById('interest-rate').value = '2.8';
+                    document.getElementById('maturity').value = '20';
+                    document.getElementById('grace-period').value = '5';
+                    document.getElementById('commitment-fee').value = '0.25';
+                    document.getElementById('management-fee').value = '0.5';
+                    document.getElementById('discount-rate').value = '5.0';
+                    document.getElementById('repayment-type').value = 'equal-installments';
+                    
+                    // Check all lender options
+                    document.querySelectorAll('.lender-options input[type="checkbox"]').forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+                    
+                    // Clear results
+                    document.querySelector('#comparison .results-container').innerHTML = '<p class="placeholder-message">Enter loan parameters and click "Calculate & Compare" to see comprehensive analysis.</p>';
+                    document.querySelector('.repayment-schedule').innerHTML = '<p class="placeholder-message">Enter loan parameters to generate a detailed repayment schedule.</p>';
+                    document.querySelector('.npv-results').innerHTML = '<p class="placeholder-message">Enter loan parameters to see NPV analysis results.</p>';
+                    
+                    // Show animation feedback
+                    this.classList.add('reset-animation');
+                    setTimeout(() => {
+                        this.classList.remove('reset-animation');
+                    }, 500);
+                });
+            }
+            
+            if (runComparisonBtn) {
+                runComparisonBtn.addEventListener('click', function() {
+                    // Show loading indicator
+                    if (calculationLoader) {
+                        calculationLoader.style.display = 'flex';
+                        runComparisonBtn.disabled = true;
+                    }
+                    
+                    // Get form values
+                    const loanAmount = parseFloat(document.getElementById('loan-amount').value);
+                    const interestRate = parseFloat(document.getElementById('interest-rate').value);
+                    const maturity = parseInt(document.getElementById('maturity').value);
+                    const gracePeriod = parseInt(document.getElementById('grace-period').value);
+                    const commitmentFee = parseFloat(document.getElementById('commitment-fee').value);
+                    const managementFee = parseFloat(document.getElementById('management-fee').value);
+                    const discountRate = parseFloat(document.getElementById('discount-rate').value);
+                    const repaymentType = document.getElementById('repayment-type').value;
+                    
+                    // Validate inputs
+                    let hasError = false;
+                    const inputs = [
+                        { elem: document.getElementById('loan-amount'), min: 1, max: Number.MAX_SAFE_INTEGER },
+                        { elem: document.getElementById('interest-rate'), min: 0, max: 100 },
+                        { elem: document.getElementById('maturity'), min: 1, max: 100 },
+                        { elem: document.getElementById('grace-period'), min: 0, max: 50 },
+                        { elem: document.getElementById('commitment-fee'), min: 0, max: 10 },
+                        { elem: document.getElementById('management-fee'), min: 0, max: 10 },
+                        { elem: document.getElementById('discount-rate'), min: 0, max: 100 }
+                    ];
+                    
+                    // Remove existing error markers
+                    document.querySelectorAll('.input-error').forEach(elem => {
+                        elem.classList.remove('input-error');
+                    });
+                    
+                    // Check each input
+                    inputs.forEach(input => {
+                        const value = parseFloat(input.elem.value);
+                        if (isNaN(value) || value < input.min || value > input.max) {
+                            input.elem.classList.add('input-error');
+                            hasError = true;
+                        }
+                    });
+                    
+                    // Validate grace period is less than maturity
+                    if (gracePeriod >= maturity) {
+                        document.getElementById('grace-period').classList.add('input-error');
+                        hasError = true;
+                    }
+                    
+                    // Get selected lenders
+                    const selectedLenders = [];
+                    document.querySelectorAll('.lender-options input:checked').forEach(checkbox => {
+                        selectedLenders.push(checkbox.value);
+                    });
+                    
+                    // Validate at least one lender is selected
+                    if (selectedLenders.length === 0) {
+                        document.querySelector('.lender-options').classList.add('input-error');
+                        hasError = true;
+                    }
+                    
+                    // If we have errors, don't proceed
+                    if (hasError) {
+                        // Hide loading indicator
+                        if (calculationLoader) {
+                            calculationLoader.style.display = 'none';
+                            runComparisonBtn.disabled = false;
+                        }
+                        return;
+                    }
+                    
+                    // Add artificial delay to show the loading indicator (for UX purposes)
+                    setTimeout(() => {
+                        // Calculate loan metrics
+                        const loanMetrics = calculateLoanMetrics(
+                            loanAmount,
+                            interestRate,
+                            maturity,
+                            gracePeriod,
+                            commitmentFee,
+                            managementFee,
+                            discountRate,
+                            repaymentType
+                        );
+                        
+                        // Display the results in all tabs
+                        displayComparisonResults(loanMetrics, selectedLenders);
+                        displayRepaymentSchedule(loanMetrics);
+                        displayNPVAnalysis(loanMetrics);
+                        
+                        // Hide loading indicator
+                        if (calculationLoader) {
+                            calculationLoader.style.display = 'none';
+                            runComparisonBtn.disabled = false;
+                        }
+                        
+                        // Show print and export buttons
+                        showPrintButton();
+                        showExportButtons();
+                        
+                        // Scroll to results
+                        document.querySelector('.shopper-results').scrollIntoView({ behavior: 'smooth' });
+                    }, 800); // Short delay to show the loader
+                });
+                
+                // Results tab switching
+                const resultsTabs = document.querySelectorAll('.results-tab');
+                resultsTabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        // Remove active class from all tabs and contents
+                        resultsTabs.forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.results-content').forEach(content => {
+                            content.classList.remove('active');
+                        });
+                        
+                        // Add active class to clicked tab and corresponding content
+                        this.classList.add('active');
+                        const tabId = this.getAttribute('data-result-tab');
+                        document.getElementById(tabId).classList.add('active');
+                    });
+                });
+            }
+            
+            // Print button functionality
+            const printButton = document.getElementById('print-results');
+            if (printButton) {
+                printButton.addEventListener('click', function() {
+                    // Update date for printing
+                    document.getElementById('print-date').textContent = new Date().toLocaleDateString();
+                    window.print();
+                });
+            }
+              // Show print button when results are available
+            function showPrintButton() {
+                const printButton = document.getElementById('print-results');
+                if (printButton) {
+                    printButton.style.display = 'inline-block';
+                }
+            }
+            
+            // Show export buttons when results are available
+            function showExportButtons() {
+                const exportComparisonBtn = document.getElementById('export-comparison');
+                const exportScheduleBtn = document.getElementById('export-schedule');
+                
+                if (exportComparisonBtn) {
+                    exportComparisonBtn.style.display = 'inline-block';
+                }
+                
+                if (exportScheduleBtn) {
+                    exportScheduleBtn.style.display = 'inline-block';
+                }
+            }
+            
+            // Theme switcher
+            const themeSelect = document.getElementById('theme-select');
+            
+            // Load saved theme preference if it exists
+            const savedTheme = localStorage.getItem('loanComparisonTheme');
+            if (savedTheme) {
+                document.body.className = savedTheme;
+                themeSelect.value = savedTheme;
+            }
+            
+            // Handle theme changes
+            themeSelect.addEventListener('change', function() {
+                const selectedTheme = this.value;
+                document.body.className = selectedTheme;
+                localStorage.setItem('loanComparisonTheme', selectedTheme);
+            });
+            
+            function calculateLoanMetrics(principal, interestRate, maturity, gracePeriod, commitmentFee, managementFee, discountRate, repaymentType) {
+                // Convert percentages to decimals
+                const r = interestRate / 100;
+                const d = discountRate / 100;
+                
+                // Calculate total periods (years)
+                const n = maturity;
+                
+                // Calculate upfront fees
+                const upfrontFees = principal * (managementFee / 100);
+                
+                // Prepare repayment schedule
+                const schedule = [];
+                let outstandingPrincipal = principal;
+                let totalInterest = 0;
+                let totalPrincipal = 0;
+                
+                // Calculate annual payment for amortized loan
+                let annualPayment = 0;
+                if (repaymentType === 'equal-installments') {
+                    // PMT formula: PMT = P * r * (1+r)^n / ((1+r)^n - 1)
+                    annualPayment = principal * r * Math.pow(1 + r, n - gracePeriod) / (Math.pow(1 + r, n - gracePeriod) - 1);
+                }
+                
+                // Calculate equal principal payment
+                const equalPrincipalPayment = principal / (n - gracePeriod);
+                
+                // Generate payment schedule
+                for (let year = 1; year <= n; year++) {
+                    const isGracePeriod = year <= gracePeriod;
+                    let principalPayment = 0;
+                    let interestPayment = outstandingPrincipal * r;
+                    let totalPayment = 0;
+                    
+                    if (!isGracePeriod) {
+                        if (repaymentType === 'equal-installments') {
+                            // Amortized payment
+                            totalPayment = annualPayment;
+                            principalPayment = totalPayment - interestPayment;
+                        } else if (repaymentType === 'equal-principal') {
+                            // Equal principal payment
+                            principalPayment = equalPrincipalPayment;
+                            totalPayment = principalPayment + interestPayment;
+                        } else if (repaymentType === 'bullet' && year === n) {
+                            // Bullet payment at the end
+                            principalPayment = outstandingPrincipal;
+                            totalPayment = principalPayment + interestPayment;
+                        }
+                        
+                        outstandingPrincipal -= principalPayment;
+                    } else {
+                        // During grace period, only interest is paid
+                        totalPayment = interestPayment;
+                    }
+                    
+                    // Add commitment fee during grace period
+                    let commitmentFeePayment = 0;
+                    if (isGracePeriod) {
+                        commitmentFeePayment = outstandingPrincipal * (commitmentFee / 100);
+                        totalPayment += commitmentFeePayment;
+                    }
+                    
+                    // Add to schedule
+                    schedule.push({
+                        year,
+                        principalPayment,
+                        interestPayment,
+                        commitmentFeePayment,
+                        totalPayment,
+                        outstandingPrincipal,
+                        isGracePeriod
+                    });
+                    
+                    totalInterest += interestPayment;
+                    totalPrincipal += principalPayment;
+                }
+                
+                // Calculate NPV of the loan
+                let npv = -principal + upfrontFees; // Initial outflow
+                for (const payment of schedule) {
+                    npv += payment.totalPayment / Math.pow(1 + d, payment.year);
+                }
+                
+                // Calculate Grant Element
+                const presentValueOfDebt = principal - npv;
+                const grantElement = (npv / principal) * 100;
+                
+                return {
+                    principal,
+                    interestRate,
+                    maturity,
+                    gracePeriod,
+                    commitmentFee,
+                    managementFee,
+                    discountRate,
+                    schedule,
+                    totalInterest,
+                    totalPrincipal,
+                    upfrontFees,
+                    totalCost: totalInterest + totalPrincipal + upfrontFees,
+                    npv,
+                    grantElement,
+                    presentValueOfDebt
+                };
+            }
+            
+            function displayComparisonResults(metrics, selectedLenders) {
+                const resultsContainer = document.querySelector('#comparison .results-container');
+                resultsContainer.innerHTML = '';
+                
+                // Create comparison data for lenders
+                const lenderData = {
+                    chinaEximbank: {
+                        name: "China Eximbank",
+                        interestRate: 2.8,
+                        maturity: 20,
+                        gracePeriod: 5,
+                        commitmentFee: 0.25,
+                        managementFee: 0.5,
+                        repaymentType: "equal-installments"
+                    },
+                    parisClub: {
+                        name: "Paris Club Consortium",
+                        interestRate: 1.5,
+                        maturity: 20,
+                        gracePeriod: 3,
+                        commitmentFee: 0.5,
+                        managementFee: 0.75,
+                        repaymentType: "equal-installments"
+                    },
+                    commercialBanks: {
+                        name: "Commercial Banks",
+                        interestRate: 5.2,
+                        maturity: 15,
+                        gracePeriod: 2,
+                        commitmentFee: 0.75,
+                        managementFee: 1.25,
+                        repaymentType: "equal-installments"
+                    },
+                    africanDevelopmentBank: {
+                        name: "African Development Bank",
+                        interestRate: 1.8,
+                        maturity: 25,
+                        gracePeriod: 5,
+                        commitmentFee: 0.75,
+                        managementFee: 0.5,
+                        repaymentType: "equal-installments"
+                    }
+                };
+                
+                // Create comparison metrics for all lenders
+                const compareMetrics = {
+                    userOption: metrics
+                };
+                
+                // Calculate metrics for selected lenders
+                selectedLenders.forEach(lender => {
+                    const lenderTerms = lenderData[lender];
+                    compareMetrics[lender] = calculateLoanMetrics(
+                        metrics.principal,
+                        lenderTerms.interestRate,
+                        lenderTerms.maturity,
+                        lenderTerms.gracePeriod,
+                        lenderTerms.commitmentFee,
+                        lenderTerms.managementFee,
+                        metrics.discountRate, // Use the same discount rate for comparison
+                        lenderTerms.repaymentType
+                    );
+                });
+                
+                // Create comparison table
+                const table = document.createElement('table');
+                table.className = 'comparison-table';
+                
+                // Table header
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                
+                const metricHeader = document.createElement('th');
+                metricHeader.textContent = 'Metric';
+                headerRow.appendChild(metricHeader);
+                
+                // Add header for user option
+                const userHeader = document.createElement('th');
+                userHeader.textContent = 'Your Terms';
+                headerRow.appendChild(userHeader);
+                
+                // Add headers for selected lenders
+                selectedLenders.forEach(lender => {
+                    const th = document.createElement('th');
+                    th.textContent = lenderData[lender].name;
+                    headerRow.appendChild(th);
+                });
+                
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+                
+                // Table body
+                const tbody = document.createElement('tbody');
+                
+                // Add metrics rows
+                const metrics_to_display = [
+                    { key: 'interestRate', name: 'Interest Rate (%)', format: value => value.toFixed(2) + '%' },
+                    { key: 'maturity', name: 'Maturity (Years)', format: value => value },
+                    { key: 'gracePeriod', name: 'Grace Period (Years)', format: value => value },
+                    { key: 'totalCost', name: 'Total Cost', format: value => formatCurrency(value) },
+                    { key: 'totalInterest', name: 'Total Interest', format: value => formatCurrency(value) },
+                    { key: 'upfrontFees', name: 'Upfront Fees', format: value => formatCurrency(value) },
+                    { key: 'npv', name: 'Net Present Value', format: value => formatCurrency(value) },
+                    { key: 'grantElement', name: 'Grant Element (%)', format: value => value.toFixed(2) + '%' }
+                ];
+                
+                metrics_to_display.forEach(metric => {
+                    const row = document.createElement('tr');
+                    
+                    // Metric name
+                    const metricCell = document.createElement('td');
+                    metricCell.className = 'metric-name';
+                    metricCell.textContent = metric.name;
+                    row.appendChild(metricCell);
+                    
+                    // User option value
+                    const userCell = document.createElement('td');
+                    userCell.textContent = metric.format(compareMetrics.userOption[metric.key]);
+                    row.appendChild(userCell);
+                    
+                    // Find best value for this metric
+                    let bestValue = compareMetrics.userOption[metric.key];
+                    let bestLender = 'userOption';
+                    
+                    selectedLenders.forEach(lender => {
+                        const lenderValue = compareMetrics[lender][metric.key];
+                        
+                        // Determine if this is better (lower is better for cost metrics, higher for others)
+                        if ((metric.key.includes('total') || metric.key === 'npv' || metric.key === 'upfrontFees') && lenderValue < bestValue) {
+                            bestValue = lenderValue;
+                            bestLender = lender;
+                        } else if (!(metric.key.includes('total') || metric.key === 'npv' || metric.key === 'upfrontFees') && lenderValue > bestValue) {
+                            bestValue = lenderValue;
+                            bestLender = lender;
+                        }
+                    });
+                    
+                    // Add lender values
+                    selectedLenders.forEach(lender => {
+                        const lenderCell = document.createElement('td');
+                        lenderCell.textContent = metric.format(compareMetrics[lender][metric.key]);
+                        
+                        // Highlight best value
+                        if (lender === bestLender) {
+                            lenderCell.className = 'best-value';
+                        }
+                        row.appendChild(lenderCell);
+                    });
+                    
+                    tbody.appendChild(row);
+                });
+                
+                table.appendChild(tbody);
+                resultsContainer.appendChild(table);
+            }
+            
+            function displayRepaymentSchedule(metrics) {
+                const scheduleContainer = document.querySelector('.repayment-schedule');
+                scheduleContainer.innerHTML = '';
+                
+                // Create table
+                const table = document.createElement('table');
+                table.className = 'repayment-table';
+                
+                // Table header
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                
+                ['Year', 'Principal Payment', 'Interest Payment', 'Commitment Fee', 'Total Payment', 'Outstanding Principal'].forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                });
+                
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+                
+                // Table body
+                const tbody = document.createElement('tbody');
+                
+                metrics.schedule.forEach(year => {
+                    const row = document.createElement('tr');
+                    if (year.isGracePeriod) {
+                        row.className = 'grace-period-row';
+                    }
+                    
+                    // Year
+                    const yearCell = document.createElement('td');
+                    yearCell.textContent = year.year;
+                    row.appendChild(yearCell);
+                    
+                    // Principal Payment
+                    const principalCell = document.createElement('td');
+                    principalCell.textContent = formatCurrency(year.principalPayment);
+                    row.appendChild(principalCell);
+                    
+                    // Interest Payment
+                    const interestCell = document.createElement('td');
+                    interestCell.textContent = formatCurrency(year.interestPayment);
+                    row.appendChild(interestCell);
+                    
+                    // Commitment Fee
+                    const feeCell = document.createElement('td');
+                    feeCell.textContent = formatCurrency(year.commitmentFeePayment);
+                    row.appendChild(feeCell);
+                    
+                    // Total Payment
+                    const totalCell = document.createElement('td');
+                    totalCell.textContent = formatCurrency(year.totalPayment);
+                    row.appendChild(totalCell);
+                    
+                    // Outstanding Principal
+                    const outstandingCell = document.createElement('td');
+                    outstandingCell.textContent = formatCurrency(year.outstandingPrincipal);
+                    row.appendChild(outstandingCell);
+                    
+                    tbody.appendChild(row);
+                });
+                
+                // Add total row
+                const totalRow = document.createElement('tr');
+                totalRow.style.fontWeight = 'bold';
+                
+                const labelCell = document.createElement('td');
+                labelCell.textContent = 'TOTAL';
+                totalRow.appendChild(labelCell);
+                
+                const principalTotalCell = document.createElement('td');
+                principalTotalCell.textContent = formatCurrency(metrics.totalPrincipal);
+                totalRow.appendChild(principalTotalCell);
+                
+                const interestTotalCell = document.createElement('td');
+                interestTotalCell.textContent = formatCurrency(metrics.totalInterest);
+                totalRow.appendChild(interestTotalCell);
+                
+                // Placeholder for commitment fee total
+                const feeTotalCell = document.createElement('td');
+                let totalCommitmentFees = 0;
+                metrics.schedule.forEach(year => {
+                    totalCommitmentFees += year.commitmentFeePayment;
+                });
+                feeTotalCell.textContent = formatCurrency(totalCommitmentFees);
+                totalRow.appendChild(feeTotalCell);
+                
+                const grandTotalCell = document.createElement('td');
+                grandTotalCell.textContent = formatCurrency(metrics.totalCost);
+                totalRow.appendChild(grandTotalCell);
+                
+                const emptyCell = document.createElement('td');
+                totalRow.appendChild(emptyCell);
+                
+                tbody.appendChild(totalRow);
+                table.appendChild(tbody);
+                
+                scheduleContainer.appendChild(table);
+                
+                // Create chart for repayment schedule
+                createRepaymentChart(metrics);
+            }
+              // Create chart for repayment schedule
+            let repaymentChart = null;
+            
+            function createRepaymentChart(metrics) {
+                // Clear previous chart if it exists
+                if (repaymentChart) {
+                    repaymentChart.destroy();
+                }
+                
+                // Create container for chart if it doesn't exist
+                if (!document.getElementById('repayment-chart-container')) {
+                    const chartContainer = document.createElement('div');
+                    chartContainer.id = 'repayment-chart-container';
+                    chartContainer.style = 'position: relative; height: 300px; margin-bottom: 20px;';
+                    chartContainer.innerHTML = '<canvas id="repayment-chart"></canvas>';
+                    
+                    // Insert chart before the repayment schedule table
+                    const repaymentSection = document.querySelector('.repayment-schedule');
+                    repaymentSection.parentNode.insertBefore(chartContainer, repaymentSection);
+                }
+                
+                // Get theme colors for chart
+                const getThemeColors = () => {
+                    const computedStyle = getComputedStyle(document.body);
+                    return {
+                        textColor: computedStyle.getPropertyValue('--text-light') || '#f0f6fc',
+                        gridColor: computedStyle.getPropertyValue('--border-subtle') || 'rgba(255, 255, 255, 0.1)',
+                        mutedTextColor: computedStyle.getPropertyValue('--text-muted') || '#8b949e',
+                        principalColor: computedStyle.getPropertyValue('--accent-emphasis') || 'rgba(88, 166, 255, 0.8)',
+                        interestColor: computedStyle.getPropertyValue('--attention-emphasis') || 'rgba(246, 185, 59, 0.8)',
+                        feeColor: computedStyle.getPropertyValue('--success-emphasis') || 'rgba(63, 185, 80, 0.8)'
+                    };
+                };
+                
+                const themeColors = getThemeColors();
+                
+                // Prepare data for the chart
+                const years = metrics.schedule.map(year => `Year ${year.year}`);
+                const principalPayments = metrics.schedule.map(year => year.principalPayment);
+                const interestPayments = metrics.schedule.map(year => year.interestPayment);
+                const commitmentFeePayments = metrics.schedule.map(year => year.commitmentFeePayment);
+                
+                // Get chart context
+                const ctx = document.getElementById('repayment-chart').getContext('2d');
+                
+                // Create the chart
+                repaymentChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: years,
+                        datasets: [
+                            {
+                                label: 'Principal',
+                                data: principalPayments,
+                                backgroundColor: themeColors.principalColor,
+                                borderColor: themeColors.principalColor,
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Interest',
+                                data: interestPayments,
+                                backgroundColor: themeColors.interestColor,
+                                borderColor: themeColors.interestColor,
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Commitment Fee',
+                                data: commitmentFeePayments,
+                                backgroundColor: themeColors.feeColor,
+                                borderColor: themeColors.feeColor,
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                stacked: true,
+                                grid: {
+                                    color: themeColors.gridColor
+                                },
+                                ticks: {
+                                    color: themeColors.mutedTextColor
+                                }
+                            },
+                            y: {
+                                stacked: true,
+                                grid: {
+                                    color: themeColors.gridColor
+                                },
+                                ticks: {
+                                    color: themeColors.mutedTextColor,
+                                    callback: function(value) {
+                                        if (value >= 1000000000) {
+                                            return (value / 1000000000).toFixed(1) + 'B';
+                                        } else if (value >= 1000000) {
+                                            return (value / 1000000).toFixed(1) + 'M';
+                                        } else if (value >= 1000) {
+                                            return (value / 1000).toFixed(1) + 'K';
+                                        } else {
+                                            return value;
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: themeColors.textColor
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('en-US', {
+                                                style: 'currency',
+                                                currency: 'USD',
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0
+                                            }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            function displayNPVAnalysis(metrics) {
+                const npvContainer = document.querySelector('.npv-results');
+                npvContainer.innerHTML = '';
+                
+                const npvResult = document.createElement('div');
+                npvResult.className = 'npv-result';
+                
+                const formatter = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
+                
+                npvResult.innerHTML = `
+                    <h4>Analysis Results</h4>
+                    <div class="result-item">
+                        <span class="result-label">Net Present Value (NPV):</span>
+                        <span class="result-value">${formatter.format(metrics.npv)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Present Value of Debt:</span>
+                        <span class="result-value">${formatter.format(metrics.presentValueOfDebt)}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Grant Element:</span>
+                        <span class="result-value">${metrics.grantElement.toFixed(2)}%</span>
+                    </div>
+                    <div class="result-explanation">
+                        <p>The NPV represents the true cost of this loan in today's dollars when using a discount rate of ${metrics.discountRate}%.</p>
+                        <p>The grant element of ${metrics.grantElement.toFixed(2)}% indicates the financial benefit provided by the loan terms compared to market rates.</p>
+                    </div>
+                `;
+                
+                npvContainer.appendChild(npvResult);
+            }
+            
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(value);
+            }
+            
+            // CSV Export functionality
+            document.getElementById('export-comparison').addEventListener('click', function() {
+                exportTableToCSV('#comparison .comparison-table', 'loan_comparison_results.csv');
+            });
+            
+            document.getElementById('export-schedule').addEventListener('click', function() {
+                exportTableToCSV('#repayment .repayment-table', 'loan_repayment_schedule.csv');
+            });
+            
+            // Function to export table data to CSV
+            function exportTableToCSV(tableSelector, filename) {
+                const table = document.querySelector(tableSelector);
+                if (!table) return;
+                
+                // Convert table to CSV
+                let csv = [];
+                
+                // Add header row
+                const headerRow = [];
+                const headers = table.querySelectorAll('thead th');
+                headers.forEach(header => {
+                    headerRow.push('"' + header.textContent.replace(/"/g, '""') + '"');
+                });
+                csv.push(headerRow.join(','));
+                
+                // Add data rows
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const rowData = [];
+                    const cells = row.querySelectorAll('td');
+                    cells.forEach(cell => {
+                        rowData.push('"' + cell.textContent.replace(/"/g, '""') + '"');
+                    });
+                    csv.push(rowData.join(','));
+                });
+                
+                // Create CSV file and download
+                const csvContent = "data:text/csv;charset=utf-8," + csv.join('\n');
+                const encodedUri = encodeURI(csvContent);
+                
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", filename);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }            // Scenario Management
+            // Variables are already declared earlier, so using them directly
+            // Load saved scenarios on page load
+            loadSavedScenarios();
+            
+            if (saveScenarioBtn) {
+                saveScenarioBtn.addEventListener('click', function() {
+                    // Get current form values
+                    const scenario = {
+                        loanAmount: document.getElementById('loan-amount').value,
+                        interestRate: document.getElementById('interest-rate').value,
+                        maturity: document.getElementById('maturity').value,
+                        gracePeriod: document.getElementById('grace-period').value,
+                        commitmentFee: document.getElementById('commitment-fee').value,
+                        managementFee: document.getElementById('management-fee').value,
+                        discountRate: document.getElementById('discount-rate').value,
+                        repaymentType: document.getElementById('repayment-type').value,
+                        name: prompt('Enter a name for this scenario:', 'Scenario ' + (new Date().toLocaleDateString()))
+                    };
+                    
+                    if (!scenario.name) return; // User cancelled
+                    
+                    // Save to localStorage
+                    saveScenario(scenario);
+                    
+                    // Update UI
+                    loadSavedScenarios();
+                });
+            }
+            
+            if (clearScenariosBtn) {
+                clearScenariosBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to delete all saved scenarios?')) {
+                        localStorage.removeItem('loanComparisonScenarios');
+                        loadSavedScenarios();
+                    }
+                });
+            }
+            
+            function saveScenario(scenario) {
+                // Get existing scenarios or initialize new array
+                const scenarios = JSON.parse(localStorage.getItem('loanComparisonScenarios') || '[]');
+                
+                // Add new scenario
+                scenarios.push(scenario);
+                
+                // Save back to localStorage
+                localStorage.setItem('loanComparisonScenarios', JSON.stringify(scenarios));
+            }
+            
+            function loadSavedScenarios() {
+                if (!scenariosList) return;
+                
+                // Get scenarios from localStorage
+                const scenarios = JSON.parse(localStorage.getItem('loanComparisonScenarios') || '[]');
+                
+                // Clear current list
+                scenariosList.innerHTML = '';
+                
+                // If no scenarios, show placeholder
+                if (scenarios.length === 0) {
+                    scenariosList.innerHTML = '<p class="placeholder-message">No saved scenarios yet.</p>';
+                    return;
+                }
+                
+                // Add each scenario to the list
+                scenarios.forEach((scenario, index) => {
+                    const scenarioItem = document.createElement('div');
+                    scenarioItem.className = 'scenario-item';
+                    scenarioItem.innerHTML = `
+                        <span>${scenario.name}</span>
+                        <span class="scenario-delete" data-index="${index}">×</span>
+                    `;
+                    
+                    // Add click handler to load the scenario
+                    scenarioItem.addEventListener('click', function(e) {
+                        // Ignore if delete button was clicked
+                        if (e.target.classList.contains('scenario-delete')) return;
+                        
+                        // Load the scenario values into the form
+                        document.getElementById('loan-amount').value = scenario.loanAmount;
+                        document.getElementById('interest-rate').value = scenario.interestRate;
+                        document.getElementById('maturity').value = scenario.maturity;
+                        document.getElementById('grace-period').value = scenario.gracePeriod;
+                        document.getElementById('commitment-fee').value = scenario.commitmentFee;
+                        document.getElementById('management-fee').value = scenario.managementFee;
+                        document.getElementById('discount-rate').value = scenario.discountRate;
+                        document.getElementById('repayment-type').value = scenario.repaymentType;
+                        
+                        // Show feedback
+                        alert(`Scenario "${scenario.name}" loaded successfully.`);
+                    });
+                    
+                    scenariosList.appendChild(scenarioItem);
+                });
+                
+                // Add delete handlers
+                document.querySelectorAll('.scenario-delete').forEach(deleteBtn => {
+                    deleteBtn.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Prevent triggering the parent click event
+                        
+                        const index = parseInt(this.getAttribute('data-index'));
+                        
+                        // Get scenarios from localStorage
+                        const scenarios = JSON.parse(localStorage.getItem('loanComparisonScenarios') || '[]');
+                        
+                        // Remove the scenario
+                        const removed = scenarios.splice(index, 1)[0];
+                        
+                        // Save back to localStorage
+                        localStorage.setItem('loanComparisonScenarios', JSON.stringify(scenarios));
+                        
+                        // Update UI
+                        loadSavedScenarios();
+                        
+                        // Show feedback
+                        alert(`Scenario "${removed.name}" has been deleted.`);
+                    });
+                });
+            }
+              // Theme selection functionality
+            const themeSelector = document.querySelector('.theme-selector select');
+            if (themeSelector) {
+                themeSelector.addEventListener('change', function() {
+                    const selectedTheme = this.value;
+                    
+                    // Remove existing theme classes
+                    document.body.classList.remove('theme-dark', 'theme-light', 'theme-high-contrast');
+                    
+                    // Add the selected theme class
+                    document.body.classList.add(selectedTheme);
+                    
+                    // Update chart with new theme colors if it exists
+                    if (repaymentChart) {
+                        // Get new theme colors
+                        const themeColors = {
+                            textColor: getComputedStyle(document.body).getPropertyValue('--text-light') || '#f0f6fc',
+                            gridColor: getComputedStyle(document.body).getPropertyValue('--border-subtle') || 'rgba(255, 255, 255, 0.1)',
+                            mutedTextColor: getComputedStyle(document.body).getPropertyValue('--text-muted') || '#8b949e',
+                            principalColor: getComputedStyle(document.body).getPropertyValue('--accent-emphasis') || 'rgba(88, 166, 255, 0.8)',
+                            interestColor: getComputedStyle(document.body).getPropertyValue('--attention-emphasis') || 'rgba(246, 185, 59, 0.8)',
+                            feeColor: getComputedStyle(document.body).getPropertyValue('--success-emphasis') || 'rgba(63, 185, 80, 0.8)'
+                        };
+                        
+                        // Update chart colors
+                        repaymentChart.data.datasets[0].backgroundColor = themeColors.principalColor;
+                        repaymentChart.data.datasets[0].borderColor = themeColors.principalColor;
+                        repaymentChart.data.datasets[1].backgroundColor = themeColors.interestColor;
+                        repaymentChart.data.datasets[1].borderColor = themeColors.interestColor;
+                        repaymentChart.data.datasets[2].backgroundColor = themeColors.feeColor;
+                        repaymentChart.data.datasets[2].borderColor = themeColors.feeColor;
+                        
+                        // Update scales and legend colors
+                        repaymentChart.options.scales.x.grid.color = themeColors.gridColor;
+                        repaymentChart.options.scales.y.grid.color = themeColors.gridColor;
+                        repaymentChart.options.scales.x.ticks.color = themeColors.mutedTextColor;
+                        repaymentChart.options.scales.y.ticks.color = themeColors.mutedTextColor;
+                        repaymentChart.options.plugins.legend.labels.color = themeColors.textColor;
+                        
+                        // Update the chart
+                        repaymentChart.update();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

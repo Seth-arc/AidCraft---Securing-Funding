@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receiving Loan Offers</title>
+    <link rel="stylesheet" href="offers-loading.css">
+    <meta name="description" content="Awaiting loan offers from Azuria Central Bank">
+    <link rel="icon" type="image/x-icon" href="img/aiddata_icon.ico">
+    <!-- Preload key assets for better performance -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCs16Hw5aXp-p7K4KLg.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCu173w5aXp-p7K4KLg.woff2" as="font" type="font/woff2" crossorigin>
+</head>
+<body>
+    <div class="loading-container" id="offers-loading-screen">
+        <!-- Animated Background Elements -->
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-gradient-overlay"></div>
+        <div class="bg-mesh"></div>
+        
+        <!-- Loading Grid -->
+        <div class="loading-grid" id="loading-grid"></div>
+        
+        <!-- Transmission Effect -->
+        <div class="transmission-waves" id="transmission-waves">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+        
+        <!-- Main Loading Content -->
+        <div class="loading-content">
+            <!-- Bank Logo Reference -->
+            <div class="loading-logo">
+                <img src="img/logo.png" alt="AidData Logo">
+                <div class="bank-connection">
+                    <div class="connection-indicator" id="connection-indicator">
+                        <div class="signal-bars">
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                        </div>
+                        <span class="connection-text">Connecting to Azuria Central Bank...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Narrative Steps -->
+            <div class="narrative-steps" id="narrative-steps">
+                <div class="narrative-step" data-step="1">
+                    <div class="step-content">
+                        <div class="step-title">Transmitting Stakeholder Feedback</div>
+                        <div class="step-subtitle">Compiling your engagement results and sending to Azuria Central Bank...</div>
+                        <div class="step-detail">Sentiment Score: <span class="highlight" id="sentiment-score">+50%</span></div>
+                    </div>
+                </div>
+                
+                <div class="narrative-step" data-step="2">
+                    <div class="step-content">
+                        <div class="step-title">Central Bank Analysis in Progress</div>
+                        <div class="step-subtitle">Board of Directors reviewing your proposal...</div>
+                        <div class="step-detail">Status: <span class="highlight">Under deliberation</span></div>
+                    </div>
+                </div>
+                
+                <div class="narrative-step" data-step="3">
+                    <div class="step-content">
+                        <div class="step-title">Cross-Referencing Global Standards</div>
+                        <div class="step-subtitle">Comparing with international lending benchmarks...</div>
+                        <div class="step-detail">Progress: <span class="highlight">Validating terms</span></div>
+                    </div>
+                </div>
+                
+                <div class="narrative-step" data-step="4">
+                    <div class="step-content">
+                        <div class="step-title">Risk Assessment Calculations</div>
+                        <div class="step-subtitle">Advanced algorithms analyzing project viability...</div>
+                        <div class="step-detail">Risk Level: <span class="highlight processing">Computing...</span></div>
+                    </div>
+                </div>
+                
+                <div class="narrative-step" data-step="5">
+                    <div class="step-content">
+                        <div class="step-title">Generating Personalized Offers</div>
+                        <div class="step-subtitle">Customizing loan packages based on your profile...</div>
+                        <div class="step-detail">Offers: <span class="highlight">Finalizing details</span></div>
+                    </div>
+                </div>
+                
+                <div class="narrative-step" data-step="6">
+                    <div class="step-content">
+                        <div class="step-title">Final Executive Approval</div>
+                        <div class="step-subtitle">Governor signing off on your loan package...</div>
+                        <div class="step-detail">Status: <span class="highlight success">Approved!</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dramatic Progress -->
+            <div class="dramatic-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                    <div class="progress-pulse" id="progress-pulse"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progress-percentage">0%</span>
+                    <span class="progress-label" id="progress-label">Processing...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dramatic Status Messages -->
+        <div class="loading-status" id="loading-status">
+            Establishing secure connection...
+        </div>
+        
+        <!-- Tension Building Elements -->
+        <div class="tension-indicator" id="tension-indicator">
+            <div class="heartbeat" id="heartbeat"></div>
+            <span class="tension-text">Awaiting Bank Decision...</span>
+        </div>
+        
+        <!-- Footer Info -->
+        <div class="version-info">Loan Offer Reception • Azuria Central Bank • 2025</div>
+    </div>
+    <script src="offers-loading.js"></script>
+</body>
+</html> 

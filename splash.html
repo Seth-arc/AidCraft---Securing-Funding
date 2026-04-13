@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Demo</title>
+    <link rel="stylesheet" href="splash.css">
+    <meta name="description" content="AidData Credit Shopper Tool - Illuminating the financial landscape for development projects through data-driven analysis and ethical decision-making">
+    <link rel="icon" type="image/x-icon" href="img/aiddata_icon.ico">
+    <!-- Preload key assets for better performance -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCs16Hw5aXp-p7K4KLg.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCs16Hw5aXp-p7K4KLg.woff2" as="font" type="font/woff2" crossorigin>
+</head>
+<body>
+    <div class="splash-container" id="splash-screen">
+        <!-- Animated Background Elements -->
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-gradient-overlay"></div>
+        <div class="bg-mesh"></div>
+        
+        <!-- Finance Grid -->
+        <div class="finance-grid" id="finance-grid"></div>
+        
+        <!-- Logo Text -->
+        <div class="logo-text">
+            <img src="img/logo.png" alt="AidData Logo">
+            <h2>Sourcing Development Funding</h2>
+        </div>
+        
+        <!-- Tagline -->
+        <div class="tagline">
+            A learning experience for illuminating the financial landscape for development projects through data-driven analysis and ethical decision-making
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons" id="action-buttons">
+            <button class="action-button enter-button" id="enter-button" aria-label="Enter Application">
+                <span class="button-content">Enter</span>
+                <span class="button-glow"></span>
+            </button>
+            <button class="action-button about-button" id="about-button" aria-label="About This Tool">
+                <span class="button-content">About</span>
+                <span class="button-glow"></span>
+            </button>
+        </div>
+        
+        <!-- About Modal -->
+        <div class="modal" id="about-modal" aria-hidden="true" role="dialog">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>About</h3>
+                    <button class="modal-close" id="modal-close" aria-label="Close Modal">×</button>
+                </div>
+                <div class="modal-body">
+                    <p>This tool helps development finance professionals make informed decisions about funding options for infrastructure and social projects.</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <div class="feature-title">Analysis</div>
+                            <div class="feature-desc">Compare loan terms and impact projections</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-title">Risk Assessment</div>
+                            <div class="feature-desc">Model financial risks</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-title">Benchmark Data</div>
+                            <div class="feature-desc">Access development finance history</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-title">Planning</div>
+                            <div class="feature-desc">Visualize financing scenarios</div>
+                        </div>
+                    </div>
+                    
+                    <p class="aiddata">Developed by AidData (2025)</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Info -->
+        <div class="version-info">Training Demo • 2025</div>
+    </div>
+    <script src="splash.js"></script>
+</body>
+</html>

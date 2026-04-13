@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Demo</title>
+    <link rel="stylesheet" href="loading.css">
+    <meta name="description" content="Loading simulation data for development funding analysis">
+    <link rel="icon" type="image/x-icon" href="img/aiddata_icon.ico">
+    <!-- Preload key assets for better performance -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCs16Hw5aXp-p7K4KLg.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCu173w5aXp-p7K4KLg.woff2" as="font" type="font/woff2" crossorigin>
+</head>
+<body>
+    <div class="loading-container" id="loading-screen">
+        <!-- Animated Background Elements -->
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-gradient-overlay"></div>
+        <div class="bg-mesh"></div>
+        
+        <!-- Loading Grid -->
+        <div class="loading-grid" id="loading-grid"></div>
+        
+        <!-- Main Loading Content -->
+        <div class="loading-content">
+            <!-- Logo Reference -->
+            <div class="loading-logo">
+                <img src="img/logo.png" alt="AidData Logo">
+            </div>
+            
+            <!-- Loading Steps -->
+            <div class="loading-steps" id="loading-steps">
+                <div class="loading-step" data-step="1">
+                    <div class="step-content">
+                        <div class="step-title">Connecting to Azuria Central Bank</div>
+                        <div class="step-subtitle">Establishing secure connection...</div>
+                    </div>
+                </div>
+                
+                <div class="loading-step" data-step="2">
+                    <div class="step-content">
+                        <div class="step-title">Loading port development project data</div>
+                        <div class="step-subtitle">Retrieving project specifications...</div>
+                    </div>
+                </div>
+                
+                <div class="loading-step" data-step="3">
+                    <div class="step-content">
+                        <div class="step-title">Searching market for loan options</div>
+                        <div class="step-subtitle">Analyzing available funding sources...</div>
+                    </div>
+                </div>
+                
+                <div class="loading-step" data-step="4">
+                    <div class="step-content">
+                        <div class="step-title">Loading AidData benchmark data</div>
+                        <div class="step-subtitle">Accessing historical development finance records...</div>
+                    </div>
+                </div>
+                
+                <div class="loading-step" data-step="5">
+                    <div class="step-content">
+                        <div class="step-title">Initializing simulation</div>
+                        <div class="step-subtitle">Preparing interactive environment...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Overall Progress -->
+            <div class="overall-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+        
+
+        
+        <!-- Footer Info -->
+        <div class="version-info">Simulation Loading • 2025</div>
+    </div>
+    <script src="loading.js"></script>
+</body>
+</html> 
