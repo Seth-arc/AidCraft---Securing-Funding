@@ -1,7 +1,7 @@
 (function () {
     const pageMap = Object.freeze({
-        app: 'index.html',
-        splash: 'splash.html',
+        app: 'app.html',
+        splash: 'index.html',
         loading: 'loading.html',
         offersLoading: 'offers-loading.html',
         comparisonTool: 'comparison-tool.html'

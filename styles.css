@@ -1185,14 +1185,6 @@ tbody tr:last-child td {
     color: rgba(0, 0, 0, 0.3);
 }
 
-/* Video container styles */
-.video-container {
-    margin: 15px 0;
-    padding: 20px;
-    background: var(--light-bg);
-    border-radius: var(--border-radius);
-}
-
 .video-element {
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -1272,11 +1264,6 @@ tbody tr:last-child td {
 }
 
 @media screen and (max-width: 768px) {
-    .video-container {
-        margin: 10px 0;
-        padding: 15px;
-    }
-
     .video-icon {
         width: 48px;
         height: 48px;

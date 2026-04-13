@@ -5,6 +5,7 @@ $requiredFiles = @(
     '.github/workflows/deploy-pages.yml',
     '.nojekyll',
     '404.html',
+    'app.html',
     'js/site-paths.js',
     'README.md'
 )
@@ -18,7 +19,7 @@ foreach ($relativePath in $requiredFiles) {
 
 $pagesNeedingHelper = @(
     'index.html',
-    'splash.html',
+    'app.html',
     'loading.html',
     'offers-loading.html'
 )

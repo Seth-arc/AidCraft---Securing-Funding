@@ -4567,7 +4567,7 @@ function handleResetSession() {
     if (confirm('Reset this local session and clear saved progress from this browser?')) {
         localStorage.removeItem('loanAnalysisProgress');
         localStorage.removeItem('savedRationale');
-        SitePaths.replacePage('app');
+        SitePaths.replacePage('splash');
     }
 }
 
