@@ -471,76 +471,84 @@ function calculateLoanMetrics() {
 }
 
 // Enhanced UI Interaction Handlers
+function getTabElements() {
+    return {
+        tabButtons: document.querySelectorAll('.tab-button'),
+        tabContents: document.querySelectorAll('.tab-content')
+    };
+}
+
+function getRequestedTabId(fallbackTab = 'overview') {
+    const targetId = window.location.hash.replace(/^#/, '');
+
+    if (!targetId) {
+        return fallbackTab;
+    }
+
+    const targetButton = document.querySelector(`[data-tab="${targetId}"]`);
+    const targetContent = document.getElementById(targetId);
+
+    return targetButton && targetContent ? targetId : fallbackTab;
+}
+
+function syncTabHash(targetId) {
+    const nextHash = `#${targetId}`;
+    if (window.location.hash === nextHash) {
+        return;
+    }
+
+    if (window.history && typeof window.history.replaceState === 'function') {
+        window.history.replaceState(null, '', nextHash);
+        return;
+    }
+
+    window.location.hash = targetId;
+}
+
+function animateTabContent(targetContent) {
+    // Animate table rows if present
+    const tableRows = targetContent.querySelectorAll('tbody tr');
+    tableRows.forEach((row, index) => {
+        setTimeout(() => {
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, index * 30);
+    });
+    
+    // Animate chart container if present
+    const chartContainer = targetContent.querySelector('.chart-container');
+    if (chartContainer) {
+        setTimeout(() => {
+            chartContainer.style.opacity = '1';
+            chartContainer.style.transform = 'translateY(0)';
+        }, 100);
+    }
+    
+    // Animate form groups if present
+    const formGroups = targetContent.querySelectorAll('.form-group');
+    formGroups.forEach((group, index) => {
+        setTimeout(() => {
+            group.style.opacity = '1';
+            group.style.transform = 'translateY(0)';
+        }, 50 + index * 50);
+    });
+}
+
 function setupTabNavigation() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
+    const { tabButtons } = getTabElements();
 
-    function switchTab(targetId) {
-        // Remove active class from all tabs and contents
-        tabButtons.forEach(button => button.classList.remove('active'));
-        tabContents.forEach(content => {
-            if (content.classList.contains('active')) {
-                content.classList.add('fade-out');
-                setTimeout(() => {
-                    content.classList.remove('active', 'fade-out');
-                }, 200);
-            }
-        });
-
-        // Add active class to target button and content
-        const targetButton = document.querySelector(`[data-tab="${targetId}"]`);
-        const targetContent = document.getElementById(targetId);
-
-        if (targetButton && targetContent) {
-            targetButton.classList.add('active');
-            
-            setTimeout(() => {
-                targetContent.classList.add('active');
-                
-                // Animate content elements
-                animateTabContent(targetContent);
-                
-                // Update progress bar
-                updateProgressBar(targetId);
-            }, 200);
-        }
-    }
-
-    function animateTabContent(targetContent) {
-        // Animate table rows if present
-        const tableRows = targetContent.querySelectorAll('tbody tr');
-        tableRows.forEach((row, index) => {
-            setTimeout(() => {
-                row.style.opacity = '1';
-                row.style.transform = 'translateY(0)';
-            }, index * 30);
-        });
-        
-        // Animate chart container if present
-        const chartContainer = targetContent.querySelector('.chart-container');
-        if (chartContainer) {
-            setTimeout(() => {
-                chartContainer.style.opacity = '1';
-                chartContainer.style.transform = 'translateY(0)';
-            }, 100);
-        }
-        
-        // Animate form groups if present
-        const formGroups = targetContent.querySelectorAll('.form-group');
-        formGroups.forEach((group, index) => {
-            setTimeout(() => {
-                group.style.opacity = '1';
-                group.style.transform = 'translateY(0)';
-            }, 50 + index * 50);
-        });
-    }
-
-    // Set up tab button click handlers
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             const targetId = button.getAttribute('data-tab');
             switchTab(targetId);
         });
+    });
+
+    window.addEventListener('hashchange', () => {
+        const requestedTab = getRequestedTabId(null);
+        if (requestedTab) {
+            switchTab(requestedTab, { syncHash: false });
+        }
     });
 
     // Export switchTab function for use by other components
@@ -2648,15 +2656,8 @@ function init() {
     // Setup UI components with a staggered initialization for better performance
     setupTabNavigation();
     
-    // Ensure overview tab is active by default
-    const overviewTab = document.querySelector('[data-tab="overview"]');
-    const overviewContent = document.getElementById('overview');
-    if (overviewTab && overviewContent) {
-        document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        overviewTab.classList.add('active');
-        overviewContent.classList.add('active');
-    }
+    const initialTab = getRequestedTabId('overview');
+    switchTab(initialTab, { syncHash: Boolean(window.location.hash) });
     
     setTimeout(() => setupLoanComparison(), 200);
     setTimeout(() => setupLoanDetails(), 300);
@@ -4464,7 +4465,8 @@ function setupHeaderMenu() {
 function handleMenuAction(action) {
     switch (action) {
         case 'home':
-            window.location.href = '/';
+            switchTab('overview');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             break;
         case 'save':
             saveProgress();
@@ -4472,11 +4474,11 @@ function handleMenuAction(action) {
         case 'load':
             loadProgress();
             break;
-        case 'profile':
-            window.location.href = '/profile';
+        case 'session':
+            showSessionInfo();
             break;
-        case 'logout':
-            handleLogout();
+        case 'reset-session':
+            handleResetSession();
             break;
         case 'glossary':
             showGlossaryModal();
@@ -4533,13 +4535,39 @@ function loadProgress() {
     }
 }
 
-// Handle logout
-function handleLogout() {
-    if (confirm('Are you sure you want to logout? Any unsaved progress will be lost.')) {
-        // Clear local storage
+function showSessionInfo() {
+    let lastSavedLabel = 'No saved session found in this browser.';
+    let savedSelections = 0;
+    let hasSavedRationale = false;
+
+    try {
+        const progress = JSON.parse(localStorage.getItem('loanAnalysisProgress'));
+        if (progress?.timestamp) {
+            lastSavedLabel = new Date(progress.timestamp).toLocaleString();
+        }
+        if (Array.isArray(progress?.selectedLoans)) {
+            savedSelections = progress.selectedLoans.length;
+        }
+        hasSavedRationale = Boolean(localStorage.getItem('savedRationale'));
+    } catch (error) {
+        console.error('Session info error:', error);
+    }
+
+    const sessionLines = [
+        'This static build stores progress locally in this browser.',
+        `Last saved: ${lastSavedLabel}`,
+        `Saved loan selections: ${savedSelections}`,
+        hasSavedRationale ? 'A saved decision rationale is available on this device.' : 'No saved decision rationale is stored on this device.'
+    ];
+
+    alert(sessionLines.join('\n'));
+}
+
+function handleResetSession() {
+    if (confirm('Reset this local session and clear saved progress from this browser?')) {
         localStorage.removeItem('loanAnalysisProgress');
-        // Redirect to logout endpoint
-        window.location.href = '/logout';
+        localStorage.removeItem('savedRationale');
+        SitePaths.replacePage('app');
     }
 }
 
@@ -4706,18 +4734,28 @@ function setupGlossarySearch() {
 
 function updateProgressBar(targetId) {
     const progressFill = document.querySelector('.progress-fill');
+    if (!progressFill) return;
+
     const tabPositions = {
-        'overview': 16.67,
-        'details': 33.34,
-        'comparisons': 50.01,
-        'comparison': 66.68,
-        'risk-dashboard': 83.35,
+        'overview': 14.29,
+        'stakeholder-engagement': 28.58,
+        'details': 42.87,
+        'comparisons': 57.16,
+        'comparison': 71.45,
+        'risk-dashboard': 85.74,
         'recommendation': 100
     };
-    progressFill.style.width = tabPositions[targetId] + '%';
+    progressFill.style.width = (tabPositions[targetId] || tabPositions.overview) + '%';
 }
 
-function switchTab(targetId) {
+function switchTab(targetId, options = {}) {
+    const { syncHash = true } = options;
+    const { tabButtons, tabContents } = getTabElements();
+
+    if (!targetId || !tabButtons.length || !tabContents.length) {
+        return false;
+    }
+
     // Remove active class from all tabs and contents
     tabButtons.forEach(button => button.classList.remove('active'));
     tabContents.forEach(content => {
@@ -4733,19 +4771,27 @@ function switchTab(targetId) {
     const targetButton = document.querySelector(`[data-tab="${targetId}"]`);
     const targetContent = document.getElementById(targetId);
 
-    if (targetButton && targetContent) {
-        targetButton.classList.add('active');
-        
-        setTimeout(() => {
-            targetContent.classList.add('active');
-            
-            // Animate content elements
-            animateTabContent(targetContent);
-            
-            // Update progress bar
-            updateProgressBar(targetId);
-        }, 200);
+    if (!targetButton || !targetContent) {
+        return false;
     }
+
+    targetButton.classList.add('active');
+    
+    setTimeout(() => {
+        targetContent.classList.add('active');
+        
+        // Animate content elements
+        animateTabContent(targetContent);
+        
+        // Update progress bar
+        updateProgressBar(targetId);
+    }, 200);
+
+    if (syncHash) {
+        syncTabHash(targetId);
+    }
+
+    return true;
 }
 
 function setupDetailsLoanSelector() {
@@ -6937,9 +6983,11 @@ function launchOffersLoadingScreen() {
             
             // Launch the main loading screen after preparation
             setTimeout(() => {
+                const offersLoadingUrl = SitePaths.buildPageUrl('offersLoading');
+
                 // Create and launch the offers loading screen in a new window/tab
                 const loadingWindow = window.open(
-                    'offers-loading.html', 
+                    offersLoadingUrl,
                     'offersLoading',
                     'width=1200,height=800,scrollbars=no,resizable=yes,location=no,toolbar=no,menubar=no,status=no'
                 );
@@ -6947,7 +6995,7 @@ function launchOffersLoadingScreen() {
                 // Handle if popup is blocked
                 if (!loadingWindow) {
                     // Fallback: navigate in same window
-                    window.location.href = 'offers-loading.html';
+                    window.location.href = offersLoadingUrl;
                 } else {
                     // Clean up overlay when loading window opens
                     setTimeout(() => {
@@ -7727,4 +7775,3 @@ function getOverviewProgress() {
         required: 9 // 1 official + 6 metrics + 2 images
     };
 }
-

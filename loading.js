@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Redirect to main application
             setTimeout(() => {
-                window.location.href = 'index.html';
+                SitePaths.navigateToPage('app');
             }, 800);
             
         }, 1000);

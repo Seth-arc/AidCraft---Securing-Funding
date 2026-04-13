@@ -264,12 +264,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Preload the loading screen
         const loadingScreen = new XMLHttpRequest();
-        loadingScreen.open('GET', 'loading.html', true);
+        loadingScreen.open('GET', SitePaths.buildPageUrl('loading'), true);
         loadingScreen.onload = function() {
             if (loadingScreen.status === 200) {
                 // After fade out, redirect to loading screen
                 setTimeout(() => {
-                    window.location.href = 'loading.html';
+                    SitePaths.navigateToPage('loading');
                 }, 500);
             }
         };

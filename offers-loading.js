@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.opener.switchTab('details');
                         window.close();
                     } else {
-                        window.location.href = 'index.html#details';
+                        SitePaths.navigateToPage('app', 'details');
                     }
                 }, 1000);
                 
